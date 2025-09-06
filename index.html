@@ -22,7 +22,7 @@
         }
         
         .container {
-            max-width: 600px;
+            max-width: 760px;
             margin: 0 auto;
             background: hsl(220, 8%, 15%);
             border: 1px solid hsl(220, 8%, 25%);
@@ -312,6 +312,153 @@
         .example-btn:hover {
             border-color: hsl(174, 72%, 45%);
         }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid hsl(220, 8%, 25%);
+        }
+
+        .tab-btn {
+            padding: 0.5rem 0.75rem;
+            background: transparent;
+            border: 1px solid transparent;
+            border-bottom: 2px solid transparent;
+            color: hsl(220, 10%, 70%);
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            color: hsl(0, 0%, 96%);
+            border-bottom-color: hsl(174, 72%, 45%);
+        }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Batch UI */
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .helper {
+            font-size: 0.75rem;
+            color: hsl(220, 10%, 60%);
+            margin-top: 0.25rem;
+        }
+
+        input[type="file"], select {
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            background: hsl(220, 8%, 18%);
+            border: 1px solid hsl(220, 8%, 25%);
+            color: hsl(0, 0%, 95%);
+            border-radius: 0.375rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+
+        select:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .batch-actions { margin-top: 1rem; }
+
+        .progress {
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: hsl(220, 10%, 70%);
+        }
+
+        .download {
+            margin-top: 0.75rem;
+            display: none;
+            padding: 0.6rem 0.9rem;
+            background: hsl(220, 8%, 18%);
+            border: 1px solid hsl(220, 8%, 25%);
+            color: hsl(0, 0%, 96%);
+            border-radius: 0.375rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            text-decoration: none;
+            text-align: center;
+            width: 100%;
+        }
+
+        .download:hover {
+            border-color: hsl(174, 72%, 45%);
+        }
+
+        /* Top bar */
+        .topbar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .icon-btn {
+            padding: 0.45rem 0.5rem;
+            background: hsl(220, 8%, 18%);
+            border: 1px solid hsl(220, 8%, 25%);
+            color: hsl(0, 0%, 96%);
+            border-radius: 0.375rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            line-height: 1;
+            white-space: nowrap;
+            width: 10ch;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .icon-btn:hover { border-color: hsl(174, 72%, 45%); }
+
+        /* Secondary button */
+        .btn-secondary {
+            background: hsl(220, 8%, 18%);
+            color: hsl(0, 0%, 92%);
+            border: 1px solid hsl(220, 8%, 25%);
+        }
+
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal .card {
+            width: min(720px, 92vw);
+            background: hsl(220, 8%, 15%);
+            border: 1px solid hsl(220, 8%, 25%);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            color: hsl(0, 0%, 96%);
+        }
+
+        .modal .card h3 { margin-bottom: 0.5rem; }
+        .modal .card p { color: hsl(220, 10%, 70%); font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .modal .card ul { margin-left: 1rem; color: hsl(220, 10%, 70%); font-size: 0.9rem; }
+        .modal .card li { margin: 0.25rem 0; }
+        .modal .card .close-row { display: flex; justify-content: flex-end; margin-top: 0.5rem; }
         
         @media (max-width: 640px) {
             body {
@@ -335,8 +482,17 @@
 </head>
 <body>
     <div class="container">
+        <div class="topbar">
+            <button id="helpBtn" class="icon-btn" type="button">Help</button>
+        </div>
         <h1>MURAI Toxicity Detection</h1>
         
+        <div class="tabs">
+            <button class="tab-btn active" type="button" data-tab="single">Single</button>
+            <button class="tab-btn" type="button" data-tab="batch">Batch CSV</button>
+        </div>
+
+        <div id="tab-single" class="tab-panel active">
         <form id="toxicityForm">
             <div class="form-group">
                 <label for="text">Text to analyze</label>
@@ -362,9 +518,10 @@
                 </div>
             </div>
             
-            <button type="submit" id="submitBtn">
-                Analyze Text
-            </button>
+            <div class="btn-row">
+                <button type="submit" id="submitBtn">Analyze Text</button>
+                <button type="button" id="cancelSingleBtn" class="btn-secondary">Cancel</button>
+            </div>
         </form>
         
         <div id="result"></div>
@@ -386,10 +543,69 @@
                 </button>
             </div>
         </div>
+        </div>
+
+        <div id="tab-batch" class="tab-panel">
+            <div class="form-group">
+                <label for="csvFile">Upload CSV or Excel</label>
+                <input type="file" id="csvFile" accept=".csv,.xlsx,.xls">
+                <div class="helper">File should contain a column with text to analyze.</div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label for="csvTextColumn">Text column</label>
+                    <select id="csvTextColumn" disabled></select>
+                </div>
+                <div class="form-group">
+                    <label>Language</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="csvLang" id="csvFil" value="fil" checked>
+                            <label for="csvFil">Filipino</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="csvLang" id="csvEng" value="eng">
+                            <label for="csvEng">English</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="batch-actions">
+                <div class="btn-row">
+                    <button type="button" id="processCsvBtn" disabled>Label CSV</button>
+                    <button type="button" id="cancelBatchBtn" class="btn-secondary">Cancel</button>
+                </div>
+                <div class="progress" id="batchProgress"></div>
+                <a id="downloadCsvLink" class="download" download="labeled.csv">Download labeled CSV</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpBackdrop" class="modal-backdrop"></div>
+    <div id="helpModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+        <div class="card">
+            <h3 id="helpTitle">Help & FAQ</h3>
+            <p>Use Single to analyze one text or Batch CSV/Excel to label many rows.</p>
+            <ul>
+                <li><strong>CSV/Excel format:</strong> Include a column with the text to analyze.</li>
+                <li><strong>Text column:</strong> After upload, select the column name that contains the text.</li>
+                <li><strong>Language:</strong> Choose Filipino or English to match your input language.</li>
+                <li><strong>Output CSV:</strong> Adds columns: is_toxic, confidence, toxic, non_toxic.</li>
+                <li><strong>Cancel:</strong> Use Cancel to stop in-progress requests.</li>
+            </ul>
+            <div class="close-row">
+                <button id="closeHelpBtn" class="icon-btn" type="button">Close</button>
+            </div>
+        </div>
     </div>
 
     <script>
         const API_URL = 'https://ynoope-murai.hf.space/predict';
+        const TAB_SINGLE = 'single';
+        const TAB_BATCH = 'batch';
+        let singleAbortController = null;
+        let batchCancelled = false;
         
         document.getElementById('toxicityForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -409,6 +625,7 @@
             showResult('Analyzing text...', 'loading');
             
             try {
+                singleAbortController = new AbortController();
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
@@ -417,7 +634,8 @@
                     body: JSON.stringify({
                         text: text,
                         lang: lang
-                    })
+                    }),
+                    signal: singleAbortController.signal
                 });
                 
                 if (!response.ok) {
@@ -428,12 +646,34 @@
                 displayResult(data);
                 
             } catch (error) {
-                console.error('Error:', error);
-                showResult(`Error: ${error.message}`, 'error');
+                if (error.name === 'AbortError') {
+                    showResult('Request cancelled', 'error');
+                } else {
+                    console.error('Error:', error);
+                    showResult(`Error: ${error.message}`, 'error');
+                }
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Analyze Text';
+                singleAbortController = null;
             }
+        });
+        // Cancel single
+        document.getElementById('cancelSingleBtn').addEventListener('click', () => {
+            if (singleAbortController) {
+                singleAbortController.abort();
+            }
+        });
+        
+        // Tabs logic
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const tab = btn.dataset.tab;
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(`tab-${tab}`).classList.add('active');
+            });
         });
         
         function showResult(message, type) {
@@ -484,6 +724,137 @@
             document.getElementById('text').value = text;
             document.querySelector(`input[value="${lang}"]`).checked = true;
         }
+
+        // Batch CSV logic
+        const csvFileInput = document.getElementById('csvFile');
+        const csvTextColumnSelect = document.getElementById('csvTextColumn');
+        const processCsvBtn = document.getElementById('processCsvBtn');
+        const batchProgress = document.getElementById('batchProgress');
+        const downloadCsvLink = document.getElementById('downloadCsvLink');
+        let parsedCsv = null;
+
+        csvFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files?.[0];
+            resetBatchUI();
+            if (!file) return;
+            const name = (file.name || '').toLowerCase();
+            try {
+                if (name.endsWith('.csv')) {
+                    const text = await file.text();
+                    const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+                    if (parsed.errors?.length) throw new Error(parsed.errors[0].message);
+                    parsedCsv = parsed;
+                    const headers = parsed.meta.fields || [];
+                    csvTextColumnSelect.innerHTML = headers.map(h => `<option value="${h}">${h}</option>`).join('');
+                    csvTextColumnSelect.disabled = headers.length === 0;
+                    processCsvBtn.disabled = headers.length === 0;
+                    batchProgress.textContent = headers.length ? 'File loaded. Pick the text column.' : 'No columns found.';
+                } else if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+                    const headers = Object.keys(json[0] || {});
+                    parsedCsv = { data: json, meta: { fields: headers } };
+                    csvTextColumnSelect.innerHTML = headers.map(h => `<option value="${h}">${h}</option>`).join('');
+                    csvTextColumnSelect.disabled = headers.length === 0;
+                    processCsvBtn.disabled = headers.length === 0;
+                    batchProgress.textContent = headers.length ? 'File loaded. Pick the text column.' : 'No columns found.';
+                } else {
+                    batchProgress.textContent = 'Unsupported file type. Please upload CSV or Excel.';
+                }
+            } catch (err) {
+                batchProgress.textContent = `Parse error: ${err.message || err}`;
+            }
+        });
+
+        function resetBatchUI() {
+            csvTextColumnSelect.innerHTML = '';
+            csvTextColumnSelect.disabled = true;
+            processCsvBtn.disabled = true;
+            batchProgress.textContent = '';
+            downloadCsvLink.style.display = 'none';
+            downloadCsvLink.removeAttribute('href');
+        }
+
+        async function labelRow(text, lang) {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text, lang })
+            });
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
+            return response.json();
+        }
+
+        processCsvBtn.addEventListener('click', async () => {
+            if (!parsedCsv) return;
+            const textCol = csvTextColumnSelect.value;
+            const lang = document.querySelector('input[name="csvLang"]:checked').value;
+            const rows = parsedCsv.data;
+            let completed = 0;
+            processCsvBtn.disabled = true;
+            batchCancelled = false;
+            batchProgress.textContent = `Processing 0/${rows.length}...`;
+            const labeledRows = [];
+            for (const row of rows) {
+                if (batchCancelled) break;
+                const inputText = String(row[textCol] ?? '').trim();
+                if (!inputText) {
+                    labeledRows.push({ ...row, is_toxic: '', label: '', confidence: '', toxic: '', non_toxic: '' });
+                } else {
+                    try {
+                        const res = await labelRow(inputText, lang);
+                        labeledRows.push({
+                            ...row,
+                            is_toxic: res.is_toxic,
+                            label: res.is_toxic ? 0 : 1,
+                            confidence: res.confidence,
+                            toxic: res?.probabilities?.toxic,
+                            non_toxic: res?.probabilities?.non_toxic,
+                        });
+                    } catch (err) {
+                        labeledRows.push({ ...row, is_toxic: 'error', label: '', confidence: '', toxic: '', non_toxic: '' });
+                    }
+                }
+                completed += 1;
+                batchProgress.textContent = `Processing ${completed}/${rows.length}...`;
+            }
+            if (labeledRows.length) {
+                const csvOut = Papa.unparse(labeledRows);
+                const blob = new Blob([csvOut], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                downloadCsvLink.href = url;
+                downloadCsvLink.style.display = 'inline-block';
+            }
+            batchProgress.textContent = batchCancelled ? 'Cancelled.' : 'Done. Download your labeled CSV.';
+            processCsvBtn.disabled = false;
+        });
+
+        // Cancel batch
+        document.getElementById('cancelBatchBtn').addEventListener('click', () => {
+            batchCancelled = true;
+        });
+
+        // Help modal logic
+        const helpBtn = document.getElementById('helpBtn');
+        const helpModal = document.getElementById('helpModal');
+        const helpBackdrop = document.getElementById('helpBackdrop');
+        const closeHelpBtn = document.getElementById('closeHelpBtn');
+        function openHelp() {
+            helpModal.style.display = 'flex';
+            helpBackdrop.style.display = 'block';
+        }
+        function closeHelp() {
+            helpModal.style.display = 'none';
+            helpBackdrop.style.display = 'none';
+        }
+        helpBtn.addEventListener('click', openHelp);
+        closeHelpBtn.addEventListener('click', closeHelp);
+        helpBackdrop.addEventListener('click', closeHelp);
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </body>
 </html>
