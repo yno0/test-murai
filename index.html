@@ -372,6 +372,23 @@
             color: hsl(220, 10%, 70%);
         }
 
+        .progressbar {
+            width: 100%;
+            height: 8px;
+            background: hsl(220, 8%, 18%);
+            border: 1px solid hsl(220, 8%, 25%);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 0.35rem;
+        }
+
+        .progressfill {
+            height: 100%;
+            width: 0%;
+            background: hsl(174, 72%, 45%);
+            transition: width 0.2s ease;
+        }
+
         .download {
             margin-top: 0.75rem;
             display: none;
@@ -390,6 +407,21 @@
         .download:hover {
             border-color: hsl(174, 72%, 45%);
         }
+
+        /* Loading indicator */
+        .spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid hsl(220, 8%, 30%);
+            border-top-color: hsl(174, 72%, 45%);
+            border-radius: 50%;
+            display: inline-block;
+            animation: spin 0.8s linear infinite;
+            vertical-align: -2px;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* Top bar */
         .topbar {
@@ -576,6 +608,7 @@
                     <button type="button" id="cancelBatchBtn" class="btn-secondary">Cancel</button>
                 </div>
                 <div class="progress" id="batchProgress"></div>
+                <div class="progressbar"><div id="batchProgressFill" class="progressfill"></div></div>
                 <a id="downloadCsvLink" class="download" download="labeled.csv">Download labeled CSV</a>
             </div>
         </div>
@@ -649,8 +682,8 @@
                 if (error.name === 'AbortError') {
                     showResult('Request cancelled', 'error');
                 } else {
-                    console.error('Error:', error);
-                    showResult(`Error: ${error.message}`, 'error');
+                console.error('Error:', error);
+                showResult(`Error: ${error.message}`, 'error');
                 }
             } finally {
                 submitBtn.disabled = false;
@@ -688,11 +721,11 @@
             const confidencePercent = (data.confidence * 100).toFixed(1);
             const safePct = (data.probabilities.non_toxic * 100).toFixed(1);
             const toxicPct = (data.probabilities.toxic * 100).toFixed(1);
-
+            
             resultDiv.innerHTML = `
                 <div class="result ${toxicityClass}">
                     <div class="result-header">
-                        <h3>${toxicityText}</h3>
+                    <h3>${toxicityText}</h3>
                         <span class="badge teal">Confidence ${confidencePercent}%</span>
                     </div>
                     <div class="meta">
@@ -796,8 +829,10 @@
             let completed = 0;
             processCsvBtn.disabled = true;
             batchCancelled = false;
-            batchProgress.textContent = `Processing 0/${rows.length}...`;
+            const startMs = Date.now();
+            batchProgress.innerHTML = `<span class="spinner"></span>Processing 0/${rows.length}...`;
             const labeledRows = [];
+            const progressFill = document.getElementById('batchProgressFill');
             for (const row of rows) {
                 if (batchCancelled) break;
                 const inputText = String(row[textCol] ?? '').trim();
@@ -819,7 +854,14 @@
                     }
                 }
                 completed += 1;
-                batchProgress.textContent = `Processing ${completed}/${rows.length}...`;
+                const elapsed = (Date.now() - startMs) / 1000;
+                const avgPerItem = elapsed / completed;
+                const remaining = Math.max(0, Math.round((rows.length - completed) * avgPerItem));
+                const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
+                const ss = String(remaining % 60).padStart(2, '0');
+                batchProgress.innerHTML = `<span class=\"spinner\"></span>Processing ${completed}/${rows.length}... · ~${mm}:${ss} left`;
+                const pct = Math.round((completed / rows.length) * 100);
+                if (progressFill) progressFill.style.width = pct + '%';
             }
             if (labeledRows.length) {
                 const csvOut = Papa.unparse(labeledRows);
